@@ -29,17 +29,12 @@ public final class AzureEnvironment {
     }
 
     static String getGraphResource(String azureEnv) {
-        switch (azureEnv) {
-            case AZURE_CHINA:
-                return "https://microsoftgraph.chinacloudapi.cn/";
-            case AZURE_US_GOVERNMENT_L4:
-                return "https://graph.microsoft.us/";
-            case AZURE_US_GOVERNMENT_L5:
-                return "https://dod-graph.microsoft.us/";
-            case AZURE_PUBLIC_CLOUD:
-            default:
-                return "https://graph.microsoft.com/";
-        }
+        return switch (azureEnv) {
+            case AZURE_CHINA -> "https://microsoftgraph.chinacloudapi.cn/";
+            case AZURE_US_GOVERNMENT_L4 -> "https://graph.microsoft.us/";
+            case AZURE_US_GOVERNMENT_L5 -> "https://dod-graph.microsoft.us/";
+            default -> "https://graph.microsoft.com/";
+        };
     }
 
     static String getServiceRoot(String azureEnv) {

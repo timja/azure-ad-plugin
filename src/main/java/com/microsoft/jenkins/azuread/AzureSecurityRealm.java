@@ -17,14 +17,9 @@ import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.microsoft.graph.http.GraphServiceException;
 import com.microsoft.graph.models.Group;
 import com.microsoft.graph.models.ProfilePhoto;
-import com.microsoft.graph.options.Option;
-import com.microsoft.graph.options.QueryOption;
-import com.microsoft.graph.requests.GraphServiceClient;
-import com.microsoft.graph.requests.GroupCollectionPage;
-import com.microsoft.graph.requests.ProfilePhotoRequestBuilder;
+import com.microsoft.graph.serviceclient.GraphServiceClient;
 import com.microsoft.jenkins.azuread.avatar.EntraAvatarProperty;
 import com.microsoft.jenkins.azuread.scribe.AzureAdApi;
 import com.microsoft.jenkins.azuread.utils.UUIDValidator;
@@ -346,7 +341,7 @@ public class AzureSecurityRealm extends SecurityRealm {
                 .build(AzureAdApi.custom(getTenant(), getAuthorityHost(getAzureEnvironmentName())));
     }
 
-    GraphServiceClient<Request> getAzureClient() {
+    GraphServiceClient getAzureClient() {
         return GraphClientCache.getClient(this);
     }
 

@@ -3,10 +3,9 @@ package com.microsoft.jenkins.azuread;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.microsoft.graph.models.DirectoryObject;
+import com.microsoft.graph.models.DirectoryObjectCollectionResponse;
 import com.microsoft.graph.models.Group;
-import com.microsoft.graph.requests.DirectoryObjectCollectionWithReferencesPage;
-import com.microsoft.graph.requests.DirectoryObjectCollectionWithReferencesRequestBuilder;
-import com.microsoft.graph.requests.GraphServiceClient;
+import com.microsoft.graph.serviceclient.GraphServiceClient;
 import okhttp3.Request;
 
 import java.util.ArrayList;
@@ -22,13 +21,13 @@ public final class AzureCachePool {
     private static final Logger LOGGER = Logger.getLogger(AzureCachePool.class.getName());
     private static Cache<String, List<AzureAdGroup>> belongingGroupsByOid =
             Caffeine.newBuilder().expireAfterAccess(1, TimeUnit.HOURS).build();
-    private final GraphServiceClient<Request> azure;
+    private final GraphServiceClient azure;
 
-    private AzureCachePool(GraphServiceClient<Request> azure) {
+    private AzureCachePool(GraphServiceClient azure) {
         this.azure = azure;
     }
 
-    public static AzureCachePool get(GraphServiceClient<Request> azure) {
+    public static AzureCachePool get(GraphServiceClient azure) {
         return new AzureCachePool(azure);
     }
 
@@ -36,18 +35,18 @@ public final class AzureCachePool {
         List<AzureAdGroup> result = belongingGroupsByOid.get(oid,
                 (cacheKey) -> {
                     try {
-                        DirectoryObjectCollectionWithReferencesPage collection = azure
-                                .users(oid)
+                        DirectoryObjectCollectionResponse collection = azure
+                                .users()
+                                .byUserId(oid)
                                 // TODO asGroup isn't working json error, and neither is $filter on securityEnabled
                                 .transitiveMemberOf()
-                                .buildRequest()
                                 .get();
 
 
                         List<AzureAdGroup> groups = new ArrayList<>();
 
                         while (collection != null) {
-                            final List<DirectoryObject> directoryObjects = collection.getCurrentPage();
+                            final List<DirectoryObject> directoryObjects = collection.getValue();
 
                             List<AzureAdGroup> groupsFromPage = directoryObjects.stream()
                                     .map(group -> {
@@ -57,7 +56,7 @@ public final class AzureCachePool {
                                         return null;
                                     })
                                     .filter(Objects::nonNull)
-                                    .collect(Collectors.toList());
+                                    .toList();
                             groups.addAll(groupsFromPage);
 
                             DirectoryObjectCollectionWithReferencesRequestBuilder nextPage = collection
